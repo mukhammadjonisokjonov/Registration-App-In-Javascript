@@ -23,10 +23,32 @@ class UI {
         <td>${member.name}</td>
         <td>${member.course}</td>
         <td>${member.phone}</td>
-        <td><a class="btn btn-danger btn-sm delete>X</a></td>
-        `;
+        <td><a class="btn btn-danger btn-sm delete">X</a></td>`;
 
         list.appendChild(row);
+    }
+
+    static clearFields() {
+        document.querySelector('#name').value = '';
+        document.querySelector('#course').value = '';
+        document.querySelector('#phone').value = '';
+    }
+
+    static deleteMember(el) {
+        if(el.classList.contains('delete')) {
+            el.parentElement.parentElement.remove();
+        }
+    }
+
+    static showAlert(message, className) {
+        const div = document.createElement('div');
+        div.className = `alert alert-${className}`;
+        div.appendChild(document.createTextNode(message));
+        const card = document.querySelector('.card');
+        const form = document.querySelector('#member-form');
+        card.insertBefore(div, form);
+
+        setTimeout(() => document.querySelector('.alert').remove(), 3000)
     }
 }
 
@@ -78,17 +100,60 @@ document.querySelector('#member-form').addEventListener('submit', (e) =>
 
     // Validate
     if(name === '' || course === '' || phone === '') {
-        alert('Please fill in all fields');
+        UI.showAlert('Please fill in all fields', 'danger');
     } else {
     // Instantiate Member
     const member = new Member(name, course, phone);
+
     // Add member to UI
     UI.addMemberToList(member);
+
     // Add member to Store
     Store.addMember(member);
+
+    // Show success message
+    UI.showAlert('Register Completed', 'success');
+
+    // Clear fields
+    UI.clearFields();
     }
 });
 
 // Event: Remove Member
+document.querySelector('#member-list').addEventListener('click', (e) =>
+{
+    // Remove member from UI
+    UI.deleteMember(e.target);
+
+    // Remove member from store
+    Store.removeMember
+    (e.target.parentElement.previousElementSibling.textContent);
+
+    // Show success message
+    UI.showAlert('Member Removed', 'success');
+});
 
 // Filter
+const filter = document.getElementById('filter');
+
+// Filter Event
+filter.addEventListener('keyup', filterUsers);
+
+// Filter members
+function filterUsers(e) {
+    // Convert text to lower case
+    const text = e.target.value.toLowerCase();
+    // Get tags
+    const list = document.querySelector('#member-list');
+    const users = list.getElementsByTagName('tr');
+
+    // Convert to an array
+    Array.from(users).forEach(function(user){
+        const userName = user.firstElementChild.textContent;
+        if(userName.toLowerCase().indexOf(text) != -1){
+            user.style.display = '';
+        } else {
+            user.style.display = 'none';
+        }
+    });
+}
